@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat Assistant</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f9ff;
+        }
+        .chat-container {
+            height: calc(100vh - 180px);
+        }
+        .message-bubble {
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .typing-indicator::after {
+            content: '...';
+            animation: typing 1s infinite;
+        }
+        @keyframes typing {
+            0% { content: '.'; }
+            33% { content: '..'; }
+            66% { content: '...'; }
+        }
+    </style>
+</head>
+<body class="bg-blue-50">
+    <div id="app" class="container mx-auto px-4 py-8 max-w-4xl">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-blue-600 mb-2">AI Chat Assistant</h1>
+            <p class="text-gray-600">Your friendly AI companion for conversations</p>
+        </header>
+
+        <div class="bg-white rounded-lg shadow-lg p-4">
+            <div class="chat-container overflow-y-auto mb-4">
+                <div v-for="(message, index) in messages" :key="index" 
+                     :class="{'flex justify-end': message.sender === 'user', 'flex justify-start': message.sender === 'ai'}"
+                     class="mb-4">
+                    <div :class="{
+                        'bg-blue-500 text-white': message.sender === 'user',
+                        'bg-gray-100 text-gray-800': message.sender === 'ai'
+                    }" class="message-bubble rounded-lg px-4 py-2 shadow">
+                        {{ message.text }}
+                    </div>
+                </div>
+                <div v-if="isTyping" class="flex justify-start mb-4">
+                    <div class="bg-gray-100 text-gray-800 rounded-lg px-4 py-2 shadow typing-indicator">
+                        AI is typing
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-2">
+                <input type="text" v-model="userInput" @keyup.enter="sendMessage"
+                       class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
+                       placeholder="Type your message here...">
+                <button @click="sendMessage" 
+                        class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                    <i class="bi bi-send"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue
+
+        createApp({
+            data() {
+                return {
+                    messages: [
+                        {
+                            sender: 'ai',
+                            text: 'Hello! I\'m your AI assistant. How can I help you today?'
+                        }
+                    ],
+                    userInput: '',
+                    isTyping: false
+                }
+            },
+            methods: {
+                sendMessage() {
+                    if (!this.userInput.trim()) return
+
+                    // Add user message
+                    this.messages.push({
+                        sender: 'user',
+                        text: this.userInput
+                    })
+
+                    // Clear input
+                    const userMessage = this.userInput
+                    this.userInput = ''
+
+                    // Show typing indicator
+                    this.isTyping = true
+
+                    // Simulate AI response with simple logic
+                    setTimeout(() => {
+                        let response = this.generateResponse(userMessage)
+                        this.isTyping = false
+                        this.messages.push({
+                            sender: 'ai',
+                            text: response
+                        })
+
+                        // Scroll to bottom
+                        this.$nextTick(() => {
+                            const container = document.querySelector('.chat-container')
+                            container.scrollTop = container.scrollHeight
+                        })
+                    }, 1500)
+                },
+                generateResponse(input) {
+                    input = input.toLowerCase()
+                    if (input.includes('hello') || input.includes('hi')) {
+                        return 'Hello! How are you today?'
+                    } else if (input.includes('how are you')) {
+                        return 'I\'m doing well, thank you for asking! How can I assist you?'
+                    } else if (input.includes('bye') || input.includes('goodbye')) {
+                        return 'Goodbye! Have a great day!'
+                    } else if (input.includes('thank')) {
+                        return 'You\'re welcome! Is there anything else I can help you with?'
+                    } else if (input.includes('weather')) {
+                        return 'I\'m sorry, I don\'t have access to real-time weather data. You might want to check a weather service for that information.'
+                    } else if (input.includes('name')) {
+                        return 'I\'m an AI assistant created to help you!'
+                    } else {
+                        return 'I understand you\'re saying something about "' + input + '". Could you please elaborate or rephrase that?'
+                    }
+                }
+            }
+        }).mount('#app')
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
